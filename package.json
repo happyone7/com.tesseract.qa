@@ -1,0 +1,10 @@
+{
+  "name": "com.tesseract.qa",
+  "displayName": "Tesseract QA Commands",
+  "version": "1.0.0",
+  "unity": "6000.0",
+  "description": "Runtime QA command system with string commands, keycode shortcuts, and button commands. Supports generic parameter parsing via reflection.",
+  "author": { "name": "Tesseract Studio" },
+  "dependencies": {},
+  "keywords": ["qa", "debug", "console", "commands", "cheat"]
+}
