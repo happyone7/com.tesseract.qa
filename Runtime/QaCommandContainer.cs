@@ -7,11 +7,13 @@ namespace Tesseract.QA
     public abstract class QaCommandContainer
     {
         private List<QaCommandBase> _commands = new List<QaCommandBase>();
+        private bool _initialized;
 
         public List<QaCommandBase> GetCommands()
         {
-            if(_commands.Count == 0)
+            if (!_initialized)
             {
+                _initialized = true;
                 CreateQaCommands();
             }
 

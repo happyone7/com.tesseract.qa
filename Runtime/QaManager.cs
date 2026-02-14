@@ -19,15 +19,13 @@ namespace Tesseract.QA
 
         private void Awake()
         {
-            if (Instance != null)
-                Destroy(Instance);
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
 
             Instance = this;
-        }
-
-        private void Start()
-        {
-            gameObject.SetActive(true);
         }
 
         private void Update()
@@ -47,6 +45,12 @@ namespace Tesseract.QA
         private void LateUpdate()
         {
             IsCommandChangedThisFrame = false;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
         }
 
         public List<ButtonCommand> GetButtonCommands()
@@ -116,6 +120,9 @@ namespace Tesseract.QA
 
         public void ExecuteStringCommand(string inputCommand)
         {
+            if (string.IsNullOrWhiteSpace(inputCommand))
+                return;
+
             string[] split = inputCommand.Split(' ');
             string key = split[0];
 
@@ -133,7 +140,7 @@ namespace Tesseract.QA
                 System.Type[] arguments = cmd.GetType().GetGenericArguments();
                 if (arguments.Length > inputArgCount)
                 {
-                    targets.Remove(cmd);
+                    targets.RemoveAt(i);
                     continue;
                 }
 
@@ -144,7 +151,7 @@ namespace Tesseract.QA
                     var inputArg = split[j + 1];
                     if (arg == typeof(int))
                     {
-                        if (int.TryParse(inputArg, out int result) == false)
+                        if (int.TryParse(inputArg, out _) == false)
                         {
                             invalidArgType = true;
                             break;
@@ -152,7 +159,7 @@ namespace Tesseract.QA
                     }
                     else if (arg == typeof(float))
                     {
-                        if (float.TryParse(inputArg, out float result) == false)
+                        if (float.TryParse(inputArg, out _) == false)
                         {
                             invalidArgType = true;
                             break;
@@ -164,7 +171,7 @@ namespace Tesseract.QA
                     }
                     else if (arg == typeof(bool))
                     {
-                        if (bool.TryParse(inputArg, out bool result) == false)
+                        if (bool.TryParse(inputArg, out _) == false)
                         {
                             invalidArgType = true;
                             break;
@@ -179,22 +186,27 @@ namespace Tesseract.QA
 
                 if (invalidArgType)
                 {
-                    targets.Remove(cmd);
+                    targets.RemoveAt(i);
                     continue;
                 }
             }
 
-            // Sort by parameter count
-            targets.OrderBy(cmd => cmd.GetType().GenericTypeArguments.Length);
             if (targets.Count == 0)
-            {
                 return;
-            }
+
+            // Sort by parameter count (ascending) and pick the best match
+            targets = targets.OrderBy(cmd => cmd.GetType().GenericTypeArguments.Length).ToList();
 
             // parameter 개수가 가장 비슷한 것으로 적용
             StringCommandBase targetCommand = targets.Last();
             var commandArgs = targetCommand.GetType().GenericTypeArguments;
             var method = targetCommand.GetType().GetMethod("Execute", 0, commandArgs);
+            if (method == null)
+            {
+                Debug.LogWarning($"[QaManager] Execute method not found for command '{key}'");
+                return;
+            }
+
             var args = new object[commandArgs.Length];
             for (int i = 0; i < commandArgs.Length; i++)
             {

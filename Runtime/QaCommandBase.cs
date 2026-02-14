@@ -17,6 +17,7 @@ namespace Tesseract.QA
 
         public ButtonCommand(string btnText, Action action)
         {
+            if (action == null) throw new ArgumentNullException(nameof(action));
             base.Description = btnText;
             this.btnText = btnText;
             this.action = action;
@@ -35,13 +36,15 @@ namespace Tesseract.QA
 
         public KeyCodeCommand(KeyCode key, Action action)
         {
-            this.Description = action.Method.Name;
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            this.Description = GetSafeMethodName(action, key.ToString());
             this.Key = key;
             this.action = action;
         }
 
         public KeyCodeCommand(KeyCode key, string desc, Action action)
         {
+            if (action == null) throw new ArgumentNullException(nameof(action));
             base.Description = desc;
             this.Key = key;
             this.action = action;
@@ -51,11 +54,28 @@ namespace Tesseract.QA
         {
             action();
         }
+
+        private static string GetSafeMethodName(Action action, string fallback)
+        {
+            string name = action.Method.Name;
+            // Compiler-generated names contain '<' (e.g., "<Start>b__0")
+            if (string.IsNullOrEmpty(name) || name.Contains("<"))
+                return fallback;
+            return name;
+        }
     }
 
     public abstract class StringCommandBase : QaCommandBase
     {
         public string Key;
+
+        protected static string GetSafeMethodName(Delegate action, string fallbackKey)
+        {
+            string name = action.Method.Name;
+            if (string.IsNullOrEmpty(name) || name.Contains("<"))
+                return fallbackKey.Replace("/", "");
+            return name;
+        }
     }
 
     public class StringCommand : StringCommandBase
@@ -64,13 +84,15 @@ namespace Tesseract.QA
 
         public StringCommand(string key, Action action)
         {
-            this.Description = action.Method.Name.Length > 0 ? action.Method.Name : key.Replace("/", "");
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            this.Description = GetSafeMethodName(action, key);
             base.Key = key;
             this.action = action;
         }
 
         public StringCommand(string key, string desc, Action action)
         {
+            if (action == null) throw new ArgumentNullException(nameof(action));
             base.Description = desc;
             base.Key = key;
             this.action = action;
@@ -88,13 +110,15 @@ namespace Tesseract.QA
 
         public StringCommand(string key, Action<T1> action)
         {
-            this.Description = action.Method.Name.Length > 0 ? action.Method.Name : key.Replace("/", "");
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            this.Description = GetSafeMethodName(action, key);
             base.Key = key;
             this.action = action;
         }
 
         public StringCommand(string key, string desc, Action<T1> action)
         {
+            if (action == null) throw new ArgumentNullException(nameof(action));
             base.Description = desc;
             base.Key = key;
             this.action = action;
@@ -102,6 +126,7 @@ namespace Tesseract.QA
 
         public override void Execute()
         {
+            Debug.LogWarning($"[QA] StringCommand<{typeof(T1).Name}> '{Key}' requires parameters. Use ExecuteStringCommand() instead.");
         }
 
         public void Execute(T1 param1)
@@ -116,13 +141,15 @@ namespace Tesseract.QA
 
         public StringCommand(string key, Action<T1, T2> action)
         {
-            this.Description = action.Method.Name.Length > 0 ? action.Method.Name : key.Replace("/", "");
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            this.Description = GetSafeMethodName(action, key);
             base.Key = key;
             this.action = action;
         }
 
         public StringCommand(string key, string desc, Action<T1, T2> action)
         {
+            if (action == null) throw new ArgumentNullException(nameof(action));
             base.Description = desc;
             base.Key = key;
             this.action = action;
@@ -130,6 +157,7 @@ namespace Tesseract.QA
 
         public override void Execute()
         {
+            Debug.LogWarning($"[QA] StringCommand<{typeof(T1).Name},{typeof(T2).Name}> '{Key}' requires parameters. Use ExecuteStringCommand() instead.");
         }
 
         public void Execute(T1 param1, T2 param2)
@@ -144,13 +172,15 @@ namespace Tesseract.QA
 
         public StringCommand(string key, Action<T1, T2, T3> action)
         {
-            this.Description = action.Method.Name.Length > 0 ? action.Method.Name : key.Replace("/", "");
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            this.Description = GetSafeMethodName(action, key);
             base.Key = key;
             this.action = action;
         }
 
         public StringCommand(string key, string desc, Action<T1, T2, T3> action)
         {
+            if (action == null) throw new ArgumentNullException(nameof(action));
             base.Description = desc;
             base.Key = key;
             this.action = action;
@@ -158,6 +188,7 @@ namespace Tesseract.QA
 
         public override void Execute()
         {
+            Debug.LogWarning($"[QA] StringCommand<{typeof(T1).Name},{typeof(T2).Name},{typeof(T3).Name}> '{Key}' requires parameters. Use ExecuteStringCommand() instead.");
         }
 
         public void Execute(T1 param1, T2 param2, T3 param3)
@@ -172,13 +203,15 @@ namespace Tesseract.QA
 
         public StringCommand(string key, Action<T1, T2, T3, T4> action)
         {
-            this.Description = action.Method.Name.Length > 0 ? action.Method.Name : key.Replace("/", "");
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            this.Description = GetSafeMethodName(action, key);
             base.Key = key;
             this.action = action;
         }
 
         public StringCommand(string key, string desc, Action<T1, T2, T3, T4> action)
         {
+            if (action == null) throw new ArgumentNullException(nameof(action));
             base.Description = desc;
             base.Key = key;
             this.action = action;
@@ -186,6 +219,7 @@ namespace Tesseract.QA
 
         public override void Execute()
         {
+            Debug.LogWarning($"[QA] StringCommand<{typeof(T1).Name},{typeof(T2).Name},{typeof(T3).Name},{typeof(T4).Name}> '{Key}' requires parameters. Use ExecuteStringCommand() instead.");
         }
 
         public void Execute(T1 param1, T2 param2, T3 param3, T4 param4)
